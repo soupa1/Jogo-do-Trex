@@ -5,7 +5,11 @@ var chaoInv;
 var nuvem, nuvemSpr;
 var obs1, obs2, obs3, obs4, obs5, obs6;
 var pontuacao;
-
+var grupoNuvens;
+var grupoObstaculos;
+var JOGANDO = 1;
+var ACABOU = 0;
+var estado = JOGANDO;
 
 function preload(){
     playerAnim = loadAnimation("./Imagens/trex1.png","./Imagens/trex3.png", "./Imagens/trex4.png");
@@ -32,6 +36,8 @@ function setup(){
     chaoInv = createSprite(200,190,400,10);
     chaoInv.visible = false;
     pontuacao = 0;
+    grupoNuvens =  new Group();
+    grupoObstaculos = new Group();
     //var numero = Math.round(random(1,100));
     //console.log(numero);
 }
@@ -40,20 +46,41 @@ function draw(){
     background("white");
     //console.log(frameCount);
     //console.log(player.y);
-    chao.velocityX = -2;
-    if(chao.x < 0){
-        chao.x = chao.width/2;
+
+    if(estado === JOGANDO){
+        chao.velocityX = -2;
+
+        if(chao.x < 0){
+            chao.x = chao.width/2;
+        }
+
+        if(keyDown("space")&&player.y >= 150){
+            player.velocityY = -10;
+        }
+
+        player.velocityY += 1;
+
+        pontuacao += Math.round(frameCount/60);
+
+        nuvens();
+        obstaculos();
+        
+        if (grupoObstaculos.isTouching(player)){
+            estado = ACABOU;
+        }
+
+
+    } else if (estado === ACABOU){
+        chao.velocityX = 0;
+        grupoNuvens.setVelocityXEach(0);
+        grupoObstaculos.setVelocityXEach(0);
+
     }
-    if(keyDown("space")&&player.y >= 150){
-    player.velocityY = -10;
-    }
-    player.velocityY += 1;
+
+    
     player.collide(chaoInv);
-    nuvens();
-    obstaculos();
     drawSprites()
     text(pontuacao,500,50);
-    pontuacao += Math.round(frameCount/60);
 }
 
 function nuvens(){
@@ -64,7 +91,8 @@ function nuvens(){
         nuvem.y = Math.round(random(1,150));
         nuvem.lifetime = 250;
         nuvem.depth = player.depth;
-        player.depth += 1;    
+        player.depth += 1;   
+        grupoNuvens.add(nuvem); 
     }
 }
 
@@ -93,5 +121,7 @@ function obstaculos(){
 
         obs.scale = 0.5;
         obs.lifetime = 250;
+
+        grupoObstaculos.add(obs);
     }
 }
