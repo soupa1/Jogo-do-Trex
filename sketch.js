@@ -1,4 +1,4 @@
-var player, playerAnim;
+var player, playerAnim, playerDeath;
 var borda;
 var chao, chaoSpr;
 var chaoInv;
@@ -11,41 +11,69 @@ var JOGANDO = 1;
 var ACABOU = 0;
 var estado = JOGANDO;
 
+var gameOverSpr,gameOverImg;
+var restartSpr,restartImg;
+
+
 function preload(){
     playerAnim = loadAnimation("./Imagens/trex1.png","./Imagens/trex3.png", "./Imagens/trex4.png");
+
     chaoSpr = loadImage("./Imagens/ground2.png");
+
     nuvemSpr = loadImage("./Imagens/cloud.png");
+
     obs1 = loadImage("./Imagens/obstacle1.png");
     obs2 = loadImage("./Imagens/obstacle2.png");
     obs3 = loadImage("./Imagens/obstacle3.png");
     obs4 = loadImage("./Imagens/obstacle4.png");
     obs5 = loadImage("./Imagens/obstacle5.png");
     obs6 = loadImage("./Imagens/obstacle6.png");
+
+    playerDeath = loadAnimation("./Imagens/trex_collided.png");
+
+    gameOverImg = loadImage("./Imagens/gameOver.png");
+    restartImg = loadImage("./Imagens/restart.png");
 }
 
 function setup(){
     createCanvas(600,200)
     player = createSprite(50, 160, 20, 50);
     player.addAnimation("correndo",playerAnim);
+    player.addAnimation("morto", playerDeath);
     player.frameDelay = 4;
     player.scale = 0.5;
+
     borda = createEdgeSprites();
+
     chao = createSprite(200,180,400,20);
     chao.addImage("chao",chaoSpr);
     chao.x = chao.width/2;
     chaoInv = createSprite(200,190,400,10);
     chaoInv.visible = false;
+
+    gameOverSpr = createSprite(300,100);
+    gameOverSpr.addImage(gameOverImg);
+    restartSpr = createSprite(300,145);
+    restartSpr.addImage(restartImg);
+    restartSpr.scale = 0.5;
+
     pontuacao = 0;
+
     grupoNuvens =  new Group();
     grupoObstaculos = new Group();
+
     //var numero = Math.round(random(1,100));
     //console.log(numero);
+
+    player.setCollider("circle",0,0,40)
+    player.debug = false;
 }
 
 function draw(){
     background("white");
     //console.log(frameCount);
     //console.log(player.y);
+    console.log(estado);
 
     if(estado === JOGANDO){
         chao.velocityX = -2;
@@ -60,7 +88,6 @@ function draw(){
 
         player.velocityY += 1;
 
-        pontuacao += Math.round(frameCount/60);
 
         nuvens();
         obstaculos();
@@ -69,11 +96,23 @@ function draw(){
             estado = ACABOU;
         }
 
+        pontuacao += Math.round(frameCount/60);
+
+
+        restartSpr.visible = false;
+        gameOverSpr.visible = false;
+
 
     } else if (estado === ACABOU){
         chao.velocityX = 0;
         grupoNuvens.setVelocityXEach(0);
         grupoObstaculos.setVelocityXEach(0);
+        player.changeAnimation("morto");
+        grupoObstaculos.setLifetimeEach(-1);
+        grupoNuvens.setLifetimeEach(-1);
+        player.velocityY = 0;
+        restartSpr.visible = true;
+        gameOverSpr.visible = true;
 
     }
 
