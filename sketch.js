@@ -19,6 +19,8 @@ var checkPoint;
 var death;
 var jump;
 
+var mensagem = "Isso é uma mensagem";
+
 
 function preload(){
     playerAnim = loadAnimation("./Imagens/trex1.png","./Imagens/trex3.png", "./Imagens/trex4.png");
@@ -76,13 +78,15 @@ function setup(){
 
     player.setCollider("circle",0,0,40)
     player.debug = false;
+    
 }
 
 function draw(){
     background("white");
     //console.log(frameCount);
     //console.log(player.y);
-    console.log(estado);
+    //console.log(estado);
+    //console.log(mensagem);
 
     if(estado === JOGANDO){
         chao.velocityX = -(4+pontuacao / 100);
@@ -107,7 +111,7 @@ function draw(){
             death.play();
         }
 
-        pontuacao += Math.round(frameCount/60);
+        pontuacao += Math.round(frameRate()/60);
 
 
         restartSpr.visible = false;
@@ -128,13 +132,25 @@ function draw(){
         player.velocityY = 0;
         restartSpr.visible = true;
         gameOverSpr.visible = true;
-
+        
+        if(mousePressedOver(restartSpr)){
+            gameReset();
+        }
     }
-
     
     player.collide(chaoInv);
     drawSprites()
     text(pontuacao,500,50);
+}
+
+function gameReset(){
+    estado = JOGANDO;
+    restartSpr.visible = false;
+    gameOverSpr.visible = false;
+    grupoNuvens.destroyEach();
+    grupoObstaculos.destroyEach();
+    player.changeAnimation("correndo",playerAnim);
+    pontuacao = 0;
 }
 
 function nuvens(){
@@ -145,7 +161,9 @@ function nuvens(){
         nuvem.y = Math.round(random(1,150));
         nuvem.lifetime = 250;
         nuvem.depth = player.depth;
-        player.depth += 1;   
+        player.depth += 1;
+        restartSpr.depth = player.depth;
+        restartSpr.depth += 1;
         grupoNuvens.add(nuvem); 
     }
 }
